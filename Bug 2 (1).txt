@@ -1,0 +1,45 @@
+Bug 2:
+
+//1-------------Start bug của Sản phẩm ----------------
+2. Hiển thị dự án trang chủ => chưa fix thì phải. Nhấn vào hình nó sổ ra 1 loạt sản phẩm trong cùng 1 dự án đó.
+4. thêm lọc theo tên dự án. http://phanthiet.online/backend/product
+6. sản phẩm ở trang danh sách sản phẩm cùng dự án em để thông tin dưới thumnail: 
+	0. Tiêu đề
+	1. mã căn = ID.
+	2. Giá.
+	3. diện tích.
+	4. Hướng.
+	5. STT: đã cọc(nếu có, k có thì k hiện STT này).
+	6. Hoa hồng.
+	7. nút tham gia bán.
+	
+-------------- End SP---------------------------
+
+//2-------------Start bug của CS KH ----------------
+6. Em thêm chức năng block khách hàng luôn nhé. Khách khiếm nhã hoặc tụi phá sẽ block luôn. Blog dựa trên Sđt. Đồng thời block luôn cả CTV.
+9. Thêm menu danh sách block.
+
+-------------- End CS KH---------------------------
+
+//4-------------Start bug của PR ----------------
+6. menu giao dịch không thành công gồm: SP + Tên KH + SDT + Địa Chỉ + Note.
+7. menu giao dịch thành công. SP + Tên KH + SDT + Địa Chỉ.
+
+-------------- End PR---------------------------
+
+//5-------------Start bug của CTV ----------------
+2. thêm menu quản lý khách hàng, tức là các khách hàng mà CTV điền vào bằng hình thức nhập sđt khi tham gia bán: tên + sđt + địa chỉ + Số giao dịch thành công.
+5. Tạo mã CSCTV
+-------------End CTV ----------------
+
+//6-------------Start bug của Admin ----------------
+1. quản lý danh sách giao dịch thành công của tất cả: Sản phẩm + Tên khách hàng + số điện thoại + doanh thu (giá bán - tổng hoa hồng).
+2. Quản lý block và unlock Khách hàng + CTV.
+
+5. http://phanthiet.online/backend/account/ctv?id=1 cho lọc CTV = số điện thoại + CMT.
+
+//7 -------------------------------------------- 
+
+Fix tìm kiếm giúp a nha.
+
+

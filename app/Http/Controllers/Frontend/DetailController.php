@@ -1,0 +1,330 @@
+<?php
+namespace App\Http\Controllers\Frontend;
+
+use Illuminate\Http\Request;
+
+use App\Http\Requests;
+use App\Http\Controllers\Controller;
+use App\Models\City;
+use App\Models\Product;
+use App\Models\District;
+use App\Models\Ward;
+use App\Models\Street;
+use App\Models\Project;
+use App\Models\EstateType;
+use App\Models\MetaData;
+use App\Models\ProductImg;
+use App\Models\Tag;
+use App\Models\TagObjects;
+use App\Models\Direction;
+use App\Models\PriceUnit;
+use App\Models\Articles;
+use App\Models\Account;
+use Helper, File, Session, Auth, Image;
+
+class DetailController extends Controller
+{
+    
+    public static $loaiSp = []; 
+    public static $loaiSpArrKey = [];    
+
+    public function __construct(){
+
+       
+    }
+    /**
+    * Display a listing of the resource.
+    *
+    * @return Response
+    */
+    public function index(Request $request)
+    {   
+        $spThuocTinhArr = $productArr = [];
+        $slug = $request->slug;
+        $detail = Product::where('slug', $slug)->where('estate_type_id', '>', 0)->first();
+        if(!$detail){
+            return redirect()->route('home');
+        }
+        $rsLoai = EstateType::find( $detail->estate_type_id );
+
+        $hinhArr = ProductImg::where('product_id', $detail->id)->get()->toArray();
+
+        $district_id = $detail->district_id;
+        if( $detail->meta_id > 0){
+           $meta = MetaData::find( $detail->meta_id )->toArray();
+           $seo['title'] = $meta['title'] != '' ? $meta['title'] : $detail->title;
+           $seo['description'] = $meta['description'] != '' ? $meta['description'] : $detail->title;
+           $seo['keywords'] = $meta['keywords'] != '' ? $meta['keywords'] : $detail->title;
+        }else{
+            $seo['title'] = $seo['description'] = $seo['keywords'] = $detail->title;
+        }               
+        
+        if($detail->thumbnail_id > 0){
+            $socialImage = ProductImg::find($detail->thumbnail_id)->image_url;
+        }
+
+        $otherList = Product::where('product.slug', '<>', '')
+                    ->where('product.type', $detail->type)
+                    ->where('product.cart_status', 1)
+                    ->where('product.district_id', $detail->district_id)
+                    ->leftJoin('product_img', 'product_img.id', '=','product.thumbnail_id')            
+                    ->join('estate_type', 'estate_type.id', '=','product.estate_type_id')      
+                    ->select('product_img.image_url as image_urls', 'product.*', 'estate_type.slug as slug_loai')
+                    ->where('product_img.image_url', '<>', '')    
+                    ->where('product.id', '<>', $detail->id)                                     
+                    ->orderBy('product.cart_status', 'asc')
+                    ->orderBy('product.id', 'desc')->limit(6)->get();
+	
+     
+        $type = $detail->type;
+        $estate_type_id = $detail->estate_type_id;
+        $street_id = $detail->street_id;
+        $ward_id = $detail->ward_id;
+        $district_id = $detail->district_id;
+        $city_id = $detail->city_id;
+        $area_id = $detail->area_id;
+        $price_id = $detail->price_id;
+        $no_room = $detail->no_room;
+        $project_id = $detail->project_id;
+        $direction_id = $detail->direction_id;                
+        $joinedProductArrId = [];
+        if(Session::get('userId') > 0){
+            $joinedProductArrId = Account::joinedProduct(Session::get('userId'));       
+        }
+        return view('frontend.detail.index', compact('commission','detail', 'rsLoai', 'hinhArr', 'productArr', 'seo', 'socialImage', 'otherList',
+            'type',
+            'estate_type_id',
+            'street_id',
+            'city_id',
+            'ward_id',
+            'district_id',
+            'no_room',
+            'direction_id',
+            'area_id',
+            'project_id',
+            'price_id',            
+            'joinedProductArrId'        
+            ));
+    }
+    public function tagDetail(Request $request){
+        $slug = $request->slug;
+        $detail = Tag::where('slug', $slug)->first();
+        if($detail->type == 1 || $detail->type == 3){ // product           
+            $productList = (object)[];
+            $listId = [];
+            $listId = TagObjects::where(['type' => $detail->type, 'tag_id' => $detail->id])->lists('object_id');
+            if($listId){
+                $listId = $listId->toArray();
+            }
+            if(!empty($listId)){
+            $query = Product::where('product.status', 1)            
+                ->leftJoin('product_img', 'product_img.id', '=','product.thumbnail_id') 
+                ->join('estate_type', 'estate_type.id', '=','product.estate_type_id')
+                ->select('product_img.image_url as image_urls', 'product.*', 'estate_type.slug as slug_loai')
+                ->where('product_img.image_url', '<>', '')
+                ->whereIn('product.id', $listId)
+                ->orderBy('product.cart_status', 'asc')
+                ->orderBy('product.id', 'desc');
+                $productList  = $query->paginate(20);
+
+            }
+            
+            if( $detail->meta_id > 0){
+               $seo = MetaData::find( $detail->meta_id )->toArray();
+               $seo['title'] = $seo['title'] != '' ? $seo['title'] : 'Tag - '. $detail->name;
+               $seo['description'] = $seo['description'] != '' ? $seo['description'] : 'Tag - '. $detail->name;
+               $seo['keywords'] = $seo['keywords'] != '' ? $seo['keywords'] : 'Tag - '. $detail->name;
+               $seo['custom_text'] = $seo['custom_text'];
+            }else{
+                $seo['title'] = $seo['description'] = $seo['keywords'] = 'Tag - '. $detail->name;
+                $seo['custom_text'] = "";
+            }
+            
+            return view('frontend.cate.tag', compact('productList', 'socialImage', 'seo', 'detail'));
+        }elseif($detail->type == 2){ // articles
+            $articlesArr = (object)[];
+            $listId = [];
+            $listId = TagObjects::where(['type' => 2, 'tag_id' => $detail->id])->lists('object_id');
+            if($listId){
+                $listId = $listId->toArray();
+            }
+            if(!empty($listId)){
+                $articlesArr = Articles::whereIn('id', $listId)->orderBy('id', 'desc')->where('cate_id', '<>', 999)->paginate(20);
+            }  
+
+            if( $detail->meta_id > 0){
+               $seo = MetaData::find( $detail->meta_id )->toArray();
+               $seo['title'] = $seo['title'] != '' ? $seo['title'] : 'Tag - '. $detail->name;
+               $seo['description'] = $seo['description'] != '' ? $seo['description'] : 'Tag - '. $detail->name;
+               $seo['keywords'] = $seo['keywords'] != '' ? $seo['keywords'] : 'Tag - '. $detail->name;
+            }else{
+                $seo['title'] = $seo['description'] = $seo['keywords'] = 'Tag - '. $detail->name;
+            }  
+                  
+            return view('frontend.news.tag', compact('title', 'articlesArr', 'seo', 'socialImage', 'detail'));
+        }
+    }
+    public function ajaxTab(Request $request){
+        $table = $request->type ? $request->type : 'category';
+        $id = $request->id;
+
+        $arr = Film::getFilmHomeTab( $table, $id);
+
+        return view('frontend.index.ajax-tab', compact('arr'));
+    }
+    /**
+    * Show the form for creating a new resource.
+    *
+    * @return Response
+    */    
+
+    public function kygui(Request $request)
+    {
+        $tagArr = Tag::where('type', 1)->get();
+        $directionArr = Direction::all();
+        $estate_type_id = $request->estate_type_id ? $request->estate_type_id : null;
+        $type = $request->type ? $request->type : 1;    
+        
+        if( $type ){
+            
+            $estateTypeArr = EstateType::where('type', $type)->select('id', 'name')->orderBy('display_order', 'desc')->get();            
+            
+        }       
+        $priceUnitList = PriceUnit::all();
+        $districtList = District::where('city_id', 1)->get();
+       // var_dump($detail->district_id);die;
+        $district_id = $request->district_id ? $request->district_id : 2;
+        $wardList = Ward::where('district_id', $district_id)->get();
+        $streetList = Street::where('district_id', $district_id)->get();
+        $projectList = Project::where('district_id', $district_id)->get();
+
+        $tienIchLists = Tag::where(['type' => 3])->get();
+        $seo['title'] = $seo['description'] = $seo['keywords'] = "Đăng tin ký gửi";
+        return view('frontend.ky-gui.index', compact('estateTypeArr',   'estate_type_id', 'type', 'district_id', 'districtList', 'wardList', 'streetList', 'projectList', 'priceUnitList', 'tagArr', 'tienIchLists', 'directionArr', 'seo'));
+    }
+    public function postKygui(Request $request){
+        $dataArr = $request->all();        
+        
+        $this->validate($request,[
+            'type' => 'required',
+            'estate_type_id' => 'required',
+            'district_id' => 'required',
+            'ward_id' => 'required',            
+            'full_address' => 'required',
+            'title' => 'required',            
+            'price' => 'required|numeric',
+            'price_unit_id' => 'required',
+            'area' => 'required|numeric',
+            'contact_name' => 'required',
+            'contact_mobile' => 'required'
+        ],
+        [            
+            'estate_type_id.required' => 'Bạn chưa chọn loại BĐS',
+            'district_id.required' => 'Bạn chưa chọn quận',
+            'ward_id.required' => 'Bạn chưa chọn phường',
+            'street_id.required' => 'Bạn chưa chọn đường phố',
+            'full_address.required' => 'Bạn chưa nhập địa điểm',
+            'title.required' => 'Bạn chưa nhập tiêu đề',            
+            'price.required' => 'Bạn chưa nhập giá',
+            'price.numeric' => 'Bạn nhập giá không hợp lệ',
+            'price_unit_id.required' => 'Bạn chưa chọn đơn vị giá',            
+            'area.required' => 'Bạn chưa nhập diện tích',
+            'contact_name.required' => 'Bạn chưa nhập tên liên hệ',            
+            'contact_mobile.required' => 'Bạn chưa nhập số di động liên hệ'
+        ]);
+        
+        $dataArr['slug'] = Helper::changeFileName($dataArr['title']); 
+        $dataArr['slug'] = str_replace(".", "-", $dataArr['slug']);
+        $dataArr['slug'] = str_replace("(", "-", $dataArr['slug']);
+        $dataArr['slug'] = str_replace(")", "", $dataArr['slug']);
+        $dataArr['alias'] = Helper::stripUnicode($dataArr['title']);
+
+        $dataArr['status'] = 2;          
+        $dataArr['city_id'] = 1;      
+        $dataArr['price_id'] = Helper::getPriceId($dataArr['price'], $dataArr['price_unit_id'], $dataArr['type']);
+        $dataArr['area_id'] = Helper::getAreaId($dataArr['area']);   
+        $rs = Product::create($dataArr);
+        $product_id = $rs->id; 
+
+        // xu ly tien ich
+        if( !empty( $dataArr['tien_ich'] ) && $product_id ){
+            foreach ($dataArr['tien_ich'] as $tag_id) {
+                TagObjects::create(['object_id' => $product_id, 'tag_id' => $tag_id, 'type' => 3]);
+            }
+        }
+
+        $this->storeImage( $product_id, $dataArr);       
+        
+        Session::flash('message', 'Đăng tin ký gửi thành công');
+
+        return redirect()->route('ky-gui-thanh-cong');
+    }
+    public function kyguiSuccess(){
+        $seo['title'] = $seo['description'] = $seo['keywords'] = 'Đăng tin ký gửi thành công';
+        return view('frontend.ky-gui.success', compact('seo'));
+    }
+    public function storeImage($id, $dataArr){        
+        //process old image
+        $imageIdArr = isset($dataArr['image_id']) ? $dataArr['image_id'] : [];
+        $hinhXoaArr = ProductImg::where('product_id', $id)->whereNotIn('id', $imageIdArr)->lists('id');
+        if( $hinhXoaArr )
+        {
+            foreach ($hinhXoaArr as $image_id_xoa) {
+                $model = ProductImg::find($image_id_xoa);
+                $urlXoa = config('moigioi.upload_path')."/".$model->image_url;
+                if(is_file($urlXoa)){
+                    unlink($urlXoa);
+                }
+                $model->delete();
+            }
+        }               
+
+        //process new image
+        if( isset( $dataArr['thumbnail_id'])){
+            $thumbnail_id = $dataArr['thumbnail_id'];
+
+            $imageArr = []; 
+
+            if( !empty( $dataArr['image_tmp_url'] )){
+
+                foreach ($dataArr['image_tmp_url'] as $k => $image_url) {
+
+                    if( $image_url && $dataArr['image_tmp_name'][$k] ){
+
+                        $tmp = explode('/', $image_url);
+
+                        if(!is_dir('uploads/'.date('Y/m/d'))){
+                            mkdir('uploads/'.date('Y/m/d'), 0777, true);
+                        }
+                        if(!is_dir('uploads/thumbs/'.date('Y/m/d'))){
+                            mkdir('uploads/thumbs/'.date('Y/m/d'), 0777, true);
+                        }
+                        $destionation = date('Y/m/d'). '/'. end($tmp);
+                        
+                        File::move(config('moigioi.upload_path').$image_url, config('moigioi.upload_path').$destionation);
+
+                        Image::make(config('moigioi.upload_path').$destionation)->resize(170, 105, function ($constraint) {
+                                $constraint->aspectRatio();
+                        })->save(config('moigioi.upload_thumbs_path').$destionation);
+                        $imageArr['name'][] = $destionation;
+
+                        $imageArr['is_thumbnail'][] = $dataArr['thumbnail_id'] == $image_url  ? 1 : 0;
+                    }
+                }
+            }
+            if( !empty($imageArr['name']) ){
+                foreach ($imageArr['name'] as $key => $name) {
+                    $rs = ProductImg::create(['product_id' => $id, 'image_url' => $name, 'display_order' => 1]);                
+                    $image_id = $rs->id;
+                    if( $imageArr['is_thumbnail'][$key] == 1){
+                        $thumbnail_id = $image_id;
+                    }
+                }
+            }
+            $model = Product::find( $id );
+            $model->thumbnail_id = $thumbnail_id;
+            $model->save();
+        }
+    }   
+
+}

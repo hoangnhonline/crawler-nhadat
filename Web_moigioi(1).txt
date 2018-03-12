@@ -1,0 +1,61 @@
+====================Module trang chủ================
+----------------------------------------------------
+Menu | dự án bán | nhà bán | nhà cho thuê | Ký gửi
+----------------------------------------------------
+Dự án bán (mặc định 8) còn lại có nút xem thêm
+----------------------------------------------------
+Nhà bán (mặc định 8) còn lại có nút xem thêm
+----------------------------------------------------
+Sản phẩm cho thuê (mặc định 8) còn lại có nút xem thêm
+----------------------------------------------------
+tin tức
+
+===========Thông tin hiển thị trên dự án bán============
+- Hình thumbnail.
+- Giá.
+- Hoa hồng.
+- nút tham gia bán.
+- Xem chi tiết >> link dự án.
+===========Thông tin hiển thị trên SP bán============
+- Hình thumbnail.
+- Giá.
+- Hoa hồng.
+- nút tham gia bán.
+- Xem chi tiết >> vào bài chi tiết sản phẩm.
+
+===========Thông tin hiển thị trên SP cho thuê============
+- Hình thumbnail.
+- Giá.
+- Hoa hồng.
+- nút tham gia cho thuê.
+- Xem chi tiết >> vào bài chi tiết sản phẩm.
+
+===========Trang chi tiết dự án===========
+
+Giống như trang thanh phú thịnh land có thêm tab check hàng online, tức hiển thị giỏ hàng.
+
+Tuy nhiên khác ở chỗ là các tab thay vì link riêng thì nó sẽ là điểm neo (tất cả nôi dung đều trong 1 link). Vào mobile các tab này sẽ dàn ngang ra thay vì chia ô như trên PC.
+
+===========Trang chi tiết sản phẩm bán và cho thuê (lẻ)===========
+Giống như phần rao vặt. Có thêm nút tham gia bán, hiển thị hoa hồng, Số người đã tham gia bán.
+
+-----------------------------------------------------------------------------------------
+
+Phần ADMIN
+
+- Chức năng thông thường như thêm sản phẩm, giỏ hàng dự án, qly thành viên, tin tức.
+- Quản lý cộng tác viên (môi giới bán). Xem được số giao dịch đã tham gia, số giao dịch thành công. hoa hồng đã nhận.
+- Quản lý sản phẩm lẻ ký gửi.
+- Quản lý hoa hồng.
+>> Phần sản phẩm sẽ có thêm phần quản lý người tham gia bán. ở dạng nó ô trống (ô chọn). Và trạng thái giao dịch: chưa giao dịch, đang giao dich, giao dịch thành công.
+-----------------------------------------------------------------------------------------
+Cơ chế tính hoa hồng: 
++ Admin tự thêm % hoa hồng khi đăng sản phẩm hoặc giỏ hàng. Số 100% này sẽ nhân với giá tiền sản phẩm để hiển thị ra ngoài.
++ Khi môi giới tham gia bán họ sẽ chọn hình thức để lại sđt của khách hoặc dẫn chốt khách. Nếu chỉ để lại sđt thì hoa hồng họ nhận hiển trong phần hiển thị chỉ còn 50%.
+
++ Sau khi môi giới tham gia bán thì hoa hồng mà họ nhận sẽ tự động sau 7 ngày (168h) bị trừ đi 10% nếu chưa bán được.
++ Khi chốt giao dịch Admin sẽ vào sản phẩm đó check đang giao dịch thì hoa hồng sẽ thời điểm đó sẽ tính cho môi giới đứng tên hoặc giới thiệu sđt trong giao dịch đó. (ai giao dịch thì sẽ check vào ô chọn).
+
+-----------------------------------------------------------------------------------
+
+Đối với các sản phẩm sau khi check đang hay đã giao dịch thì ngoài trang chủ sản phẩm đó tự động mất đi để khỏi người khác và tham gia bán.
