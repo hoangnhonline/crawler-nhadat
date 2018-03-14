@@ -32,7 +32,7 @@ class LichHen extends Model  {
                     ];
     public function info()
     {
-        return $this->hasOne('App\Models\CtvJoinSale', 'id', 'join_id');
+        return $this->hasOne('App\Models\CrawlData', 'id', 'join_id');
     }
     public function user()
     {

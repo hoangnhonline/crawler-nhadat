@@ -180,19 +180,11 @@ body {
       <br>
       
     </form>
-    <div class="clearfix"></div>
-      <button type="button" style="margin-top:15px;" class="btn btn-block login-button-fb btn-social facebook-login">Đăng nhập với Facebook</button>
+      
   </div>
   
 </div>
 
 <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
-<script src="{{ URL::asset('public/assets/js/home.js') }}"></script>
-   <input type="hidden" id="route-ajax-login-fb" value="{{route('ajax-login-by-fb')}}">
-   <input type="hidden" id="fb-app-id" value="{{ env('FACEBOOK_APP_ID') }}">
-   <input type="hidden" id="route-auth-login-ajax" value="{{ route('auth-login-ajax') }}">
-   <input type="hidden" id="route-register-customer-ajax" value="{{ route('register-customer-ajax') }}">
-   <input type="hidden" id="route-register-newsletter" value="{{ route('register.newsletter') }}">
-   <input type="hidden" id="route-customer-join-sale-ajax" value="{{ route('customer-join-sale')  }}">
 </body>
 </html>

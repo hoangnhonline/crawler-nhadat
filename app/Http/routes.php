@@ -1,5 +1,5 @@
 <?php
-Route::get('/crawler', ['uses' => 'CrawlerController@ward', 'as' => 'crawler']);
+Route::get('/crawler', ['uses' => 'CrawlerController@crawler', 'as' => 'crawler']);
 Route::get('muaban/', ['as' => 'muaban', 'uses' => 'CrawlerController@muaban']);
 Route::get('mbnd/', ['as' => 'mbnd', 'uses' => 'CrawlerController@mbnd']);
 Route::get('tuoitre/', ['as' => 'mbnd', 'uses' => 'CrawlerController@tuoitre']);

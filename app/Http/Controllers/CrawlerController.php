@@ -11,49 +11,194 @@ use App\Models\CrawlData;
 
 class CrawlerController extends Controller
 {    
-    public function muaban(){
+    public function crawler(){
         set_time_limit(10000);
-        $limit = 10;
+        /* muaban.net */ 
+        $arrMuaBan = [
+            '1' => 'https://muaban.net/nha-mat-tien-ho-chi-minh-l59-c3201?cp=',
+            '1' => 'https://muaban.net/nha-hem-ngo-ho-chi-minh-l59-c3202?cp=',
+            '2' => 'https://muaban.net/nha-mat-tien-ho-chi-minh-l59-c3401?cp=',
+            '2' => 'https://muaban.net/mat-bang-cua-hang-shop-ho-chi-minh-l59-c3403?cp=',
+            '2' => 'https://muaban.net/nha-hem-ngo-ho-chi-minh-l59-c3407?cp='
+        ];
+        foreach($arrMuaBan as $type => $link_crawl){
+            $limit = 10;
 
-        for($page = $limit; $page >= 1; $page--){ 
-                //$url = "http://bepducthanh.vn/bo-bep-gas-khuyen-mai-d4p".$page.".html";
-            $arrReturn = [];
-            $url = "https://muaban.net/ban-nha-can-ho-ho-chi-minh-l59-c32?cp=".$page;   
+            for($page = $limit; $page >= 1; $page--){                   
+                $arrReturn = [];
+                $url = $link_crawl.$page;
+               
+                $ch = curl_init();
+                curl_setopt( $ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1" );
+                curl_setopt( $ch, CURLOPT_URL, $url );
+                curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
+                curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                $result = curl_exec($ch);            
+               
+                curl_close($ch);                
+                $crawler = new simple_html_dom();                
+                $crawler->load($result);                
+                $i = 0;                
+                $arrInsert = [];            
+                foreach($crawler->find('div.mbn-box-list-content') as $element){
+              
+                    $href = $element->find('a', 0)->href;
+                    $arr['tieu_de'] = trim($element->find('.mbn-title', 0)->plaintext);
+                    $arr['gia'] = trim($element->find('.mbn-price', 0)->plaintext);
+                    $arr['type'] = $type;
+                    $rs = CrawlData::where('url',$href)->first();
+                    if(!$rs){
+                        $this->getDetailMuaBan($href, $arr);
+                    }
+                              
+                 }
+            }   
 
-           // http://bepducthanh.vn/thiet-bi-nha-bep-d2.html                         
-            $ch = curl_init();
-            curl_setopt( $ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1" );
-            curl_setopt( $ch, CURLOPT_URL, $url );
-            curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
-            curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            $result = curl_exec($ch);
-         // dd($result);
-           
-            curl_close($ch);
-            // Create a DOM object
-            $crawler = new simple_html_dom();
-            // Load HTML from a string
-            $crawler->load($result);
-            //dd($crawler);       
-            $i = 0;
-            //var_dump('<h1>', $page, "</h1>");
-            $arrInsert = [];            
-            foreach($crawler->find('div.mbn-box-list-content') as $element){
+        }
+        
+        /* batdongsan.com.vn */
+        
+        $arrBds = [
+            '1' => 'https://batdongsan.com.vn/ban-nha-rieng-tp-hcm/p',
+            '1' => 'https://batdongsan.com.vn/ban-nha-mat-pho-tp-hcm/p',
+            '2' => 'https://batdongsan.com.vn/cho-thue-nha-rieng-tp-hcm/p',
+            '2' => 'https://batdongsan.com.vn/cho-thue-nha-mat-pho-tp-hcm/p',
+            '2' => 'https://batdongsan.com.vn/cho-thue-kho-nha-xuong-dat-tp-hcm/p'
+        ];
+        foreach($arrBds as $type => $link_crawl){
+            $limit = 10;
+
+            for($page = $limit; $page >= 1; $page--){                     
+                $arrReturn = [];
+                $url = $link_crawl.$page;                                          
+                $ch = curl_init();
+                curl_setopt( $ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1" );
+                curl_setopt( $ch, CURLOPT_URL, $url );
+                curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
+                curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                $result = curl_exec($ch);             
+               
+                curl_close($ch);                
+                $crawler = new simple_html_dom();                
+                $crawler->load($result);                
+                $i = 0;                
+                $arrInsert = [];
+                $i=0;
+                foreach($crawler->find('.Main div.search-productItem') as $element){
+                    if($element->find('a', 0)){
+                        $href = $element->find('a', 0)->href;
+                        $arr['tieu_de'] = trim($element->find('.p-title h3', 0)->plaintext);
+                        $arr['gia'] = trim($element->find('span.product-price', 0)->plaintext);
+                        $arr['dien_tich'] = trim($element->find('span.product-area', 0)->plaintext);
+                        $arr['type'] = $type;
+                        $rs = CrawlData::where('url',$href)->first();
+                        if(!$rs){                       
+                            $this->getDetailBds("https://batdongsan.com.vn".$href, $arr);
+                        }
+                    }
+                              
+                 }
+            }
+        }    
           
-                $href = $element->find('a', 0)->href;
+        /* muabannhadat */
+        
+        $arrmuabannhadat = [
+            '1' => 'http://www.muabannhadat.vn/nha-ban-nha-pho-3535/tp-ho-chi-minh-s59?p=',            
+            '2' => 'http://www.muabannhadat.vn/nha-cho-thue-3518/tp-ho-chi-minh-s59?p=',
+            '2' => 'http://www.muabannhadat.vn/mat-bang-cho-thue-3521/tp-ho-chi-minh-s59?p='
+        ];
+        foreach($arrmuabannhadat as $type => $link_crawl){
+            $limit = 10;
 
-                $rs = CrawlData::where('url',$href)->first();
-                if(!$rs){
-                    $this->getDetailMuaBan($href);
+            for($page = $limit; $page >= 1; $page--){                     
+                $arrReturn = [];
+                $url = $link_crawl.$page;
+                $ch = curl_init();
+                curl_setopt( $ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1" );
+                curl_setopt( $ch, CURLOPT_URL, $url );
+                curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
+                curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                $result = curl_exec($ch);
+                curl_close($ch);                
+                $crawler = new simple_html_dom();                
+                $crawler->load($result);                
+                $i = 0;                
+                $arrInsert = [];
+                $i=0;
+                foreach($crawler->find('.content-list div.Product-TopListing') as $element){
+                    if($element->find('a', 0)){
+                        $href = $element->find('a', 0)->href;
+                        $rs = CrawlData::where('url',$href)->first();
+                        $arr['tieu_de'] = trim($element->find('.title-filter-link', 0)->plaintext);
+                        $arr['gia'] = trim($element->find('.listing-price', 0)->plaintext);                        
+                        $arr['type'] = $type;
+                        if(!$rs){                                
+                            $this->getDetailMbnd("http://www.muabannhadat.vn".$href, $arr);
+                        }
+                    }
+                              
+                 }
+            }
+        } 
+    
+        /* nhadatnhanh */
+        $arrnhadatnhanh = [
+            '1' => 'https://nhadatnhanh.vn/dm-nha-ban-nha-pho-1/tt-tp.ho-chi-minh-1/page:',            
+            '2' => 'https://nhadatnhanh.vn/dm-nha-cho-thue-nha-pho-17/tt-tp-ho-chi-minh-1/page:'
+        ];
+        foreach($arrnhadatnhanh as $type => $link_crawl){
+            $limit = 10;
 
-                }
-                          
-             }
-        }            
+            for($page = $limit; $page >= 1; $page--){       
+                $arrReturn = [];
+                $url = $link_crawl.$page;                                       
+                $ch = curl_init();
+                curl_setopt( $ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1" );
+                curl_setopt( $ch, CURLOPT_URL, $url );
+                curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
+                curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                $result = curl_exec($ch);             
+               
+                curl_close($ch);
+                
+                $crawler = new simple_html_dom();
+                
+                $crawler->load($result);
+                    
+                $i = 0;
+                
+                $arrInsert = [];
+                $i=0;
+                foreach($crawler->find('.result-list div.Product-Free') as $element){
+                    if($element->find('a', 0)){
+                        $href = $element->find('a', 0)->href;
+                        $rs = CrawlData::where('url',$href)->first();
+                        $arr['tieu_de'] = trim($element->find('.title h3', 0)->plaintext);
+                        $arr['gia'] = trim($element->find('.listing-price span', 0)->plaintext); 
+                        $tmp = $element->find('.line-des .col-xs-12', 0)->innertext;
+                        if($tmp){
+                            $tmp = explode('<img src="/img/svg/ic-acreage.svg" alt="NhaDatNhanh">', $tmp);
+                            if(!empty($tmp) && isset($tmp[1])){
+                                $arr['dien_tich'] = trim(str_replace("&nbsp;", "", $tmp[1]));
+                            }
+                        }              
+                        $arr['type'] = $type;
+                        if(!$rs){                                
+                            $this->getDetailNhaDatNhanh("https://nhadatnhanh.vn/".$href, $arr);
+                        }
+                    }
+                              
+                 }                              
+            }
+        }  
           
     }
-    public function getDetailMuaBan($url){         
+    public function getDetailMuaBan($url, $arrData){         
         $ch = curl_init();
         curl_setopt( $ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1" );
         curl_setopt( $ch, CURLOPT_URL, $url );
@@ -71,7 +216,7 @@ class CrawlerController extends Controller
         if($crawler->find('#dvContent .ct-contact', 0)){
             $select = $crawler->find('#dvContent .ct-contact', 0);
             $arrData['url'] = $url;
-            $arrData['site_id'] = 1; // muaban.net 
+            $arrData['site_id'] = 1;            
             if($select->find('.col-md-2')){          
                 foreach($select->find('.col-md-2') as $opt){                            
                     
@@ -87,19 +232,37 @@ class CrawlerController extends Controller
                         $address = trim($opt->next_sibling()->plaintext);
                         $arrData['address'] = $address != '' ? $address : null;
                     }
-                    if(isset($arrData['phone'])){
-                        $rsData = CrawlData::where('phone', $arrData['phone'])->first();
-                        if($rsData){
-                            $rsData->lap = $rsData->lap + 1;
-                            $rsData->save();
-                        }else{
-                            CrawlData::create($arrData);        
-                        }
-                    }
+                    $this->insertDb($arrData);
                 }                
             }
+        }        
+    }
+    public function insertDb($arrData){
+        if(isset($arrData['phone'])){
+            if(!isset($arrData['address']) || $arrData['address'] == null){
+                $arrData['moigioi'] = 1;
+            }else{ // check coi dia chi do co bao nhieu so dien thoai
+                $address = $arrData['address'];
+                $phone = $arrData['phone'];
+                $rsCheck = CrawlData::where('address', $address)->where('phone', '<>', $phone)->get()->count();
+                if($rsCheck >= 2){
+                    $arrData['moigioi'] = 1;
+                }
+            }
+            $rsData = CrawlData::where('phone', $arrData['phone'])->first();            
+
+            if($rsData){
+                $solanlap = $rsData->lap + 1;
+                if($solanlap > 2){
+                    $rsData->moigioi = 1;
+                }
+                $rsData->lap = $solanlap;
+                $rsData->save();
+            }else{
+                
+                CrawlData::create($arrData);        
+            }
         }
-        
     }
     //https://nha.chotot.com/tp-ho-chi-minh/mua-ban-nha-dat
     public function chotot(){
@@ -202,15 +365,7 @@ class CrawlerController extends Controller
                     }elseif($value == "Địa chỉ:"){
                         $arrData['address'] = trim($opt->next_sibling()->plaintext);
                     }
-                    if(isset($arrData['phone'])){
-                        $rsData = CrawlData::where('phone', $arrData['phone'])->first();
-                        if($rsData){
-                            $rsData->lap = $rsData->lap + 1;
-                            $rsData->save();
-                        }else{
-                            CrawlData::create($arrData);        
-                        }
-                    }
+                    $this->insertDb($arrData);
                 }                
             }
         }
@@ -223,43 +378,43 @@ class CrawlerController extends Controller
         for($page = $limit; $page >= 1; $page--){ 
                 //$url = "http://bepducthanh.vn/bo-bep-gas-khuyen-mai-d4p".$page.".html";
             $arrReturn = [];
-              $url = "https://batdongsan.com.vn/ban-nha-rieng-tp-hcm/p".$page;   
+            $url = "https://batdongsan.com.vn/ban-nha-rieng-tp-hcm/p".$page;   
 
-                   // http://bepducthanh.vn/thiet-bi-nha-bep-d2.html                         
-                    $ch = curl_init();
-                    curl_setopt( $ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1" );
-                    curl_setopt( $ch, CURLOPT_URL, $url );
-                    curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
-                    curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
-                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                    $result = curl_exec($ch);
-                 // dd($result);
-                   
-                    curl_close($ch);
-                    // Create a DOM object
-                    $crawler = new simple_html_dom();
-                    // Load HTML from a string
-                    $crawler->load($result);
-                    //dd($crawler);       
-                    $i = 0;
-                    //var_dump('<h1>', $page, "</h1>");
-                    $arrInsert = [];
-                    $i=0;
-                    foreach($crawler->find('.Main div.search-productItem') as $element){
-                        if($element->find('a', 0)){
-                            $href = $element->find('a', 0)->href;
-                            $rs = CrawlData::where('url',$href)->first();
-                            if(!$rs){                                
-                                $this->getDetailBds("https://batdongsan.com.vn".$href);
-                            }
-                        }
-                                  
-                     }
+           // http://bepducthanh.vn/thiet-bi-nha-bep-d2.html                         
+            $ch = curl_init();
+            curl_setopt( $ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1" );
+            curl_setopt( $ch, CURLOPT_URL, $url );
+            curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
+            curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            $result = curl_exec($ch);
+         // dd($result);
+           
+            curl_close($ch);
+            // Create a DOM object
+            $crawler = new simple_html_dom();
+            // Load HTML from a string
+            $crawler->load($result);
+            //dd($crawler);       
+            $i = 0;
+            //var_dump('<h1>', $page, "</h1>");
+            $arrInsert = [];
+            $i=0;
+            foreach($crawler->find('.Main div.search-productItem') as $element){
+                if($element->find('a', 0)){
+                    $href = $element->find('a', 0)->href;
+                    $rs = CrawlData::where('url',$href)->first();
+                    if(!$rs){                                
+                        $this->getDetailBds("https://batdongsan.com.vn".$href);
+                    }
                 }
+                          
+             }
+        }
                 
           
     } 
-    public function getDetailBds($url){  
+    public function getDetailBds($url, $arrData){  
         $arrData['url'] = $url;      
         $ch = curl_init();
         curl_setopt( $ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1" );
@@ -294,15 +449,7 @@ class CrawlerController extends Controller
         }
         $arrData['site_id'] = 2;
 
-        if(isset($arrData['phone'])){
-            $rsData = CrawlData::where('phone', $arrData['phone'])->first();
-            if($rsData){
-                $rsData->lap = $rsData->lap + 1;
-                $rsData->save();
-            }else{
-                CrawlData::create($arrData);        
-            }
-        }
+        $this->insertDb($arrData);
     }
     public function nhadatnhanh(){
         set_time_limit(10000);
@@ -311,43 +458,43 @@ class CrawlerController extends Controller
         for($page = $limit; $page >= 1; $page--){ 
                 //$url = "http://bepducthanh.vn/bo-bep-gas-khuyen-mai-d4p".$page.".html";
             $arrReturn = [];
-              $url = "https://nhadatnhanh.vn/dm-nha-ban-nha-pho-1/tt-tp.ho-chi-minh-1/page:".$page;   
+            $url = "https://nhadatnhanh.vn/dm-nha-ban-nha-pho-1/tt-tp.ho-chi-minh-1/page:".$page;   
 
-                   // http://bepducthanh.vn/thiet-bi-nha-bep-d2.html                         
-                    $ch = curl_init();
-                    curl_setopt( $ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1" );
-                    curl_setopt( $ch, CURLOPT_URL, $url );
-                    curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
-                    curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
-                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                    $result = curl_exec($ch);
-                 // dd($result);
-                   
-                    curl_close($ch);
-                    // Create a DOM object
-                    $crawler = new simple_html_dom();
-                    // Load HTML from a string
-                    $crawler->load($result);
-                    //dd($crawler);       
-                    $i = 0;
-                    //var_dump('<h1>', $page, "</h1>");
-                    $arrInsert = [];
-                    $i=0;
-                    foreach($crawler->find('.result-list div.Product-Free') as $element){
-                        if($element->find('a', 0)){
-                            $href = $element->find('a', 0)->href;
-                            $rs = CrawlData::where('url',$href)->first();
-                            if(!$rs){                                
-                                $this->getDetailNhaDatNhanh("https://nhadatnhanh.vn/".$href);
-                            }
-                        }
-                                  
-                     }
+           // http://bepducthanh.vn/thiet-bi-nha-bep-d2.html                         
+            $ch = curl_init();
+            curl_setopt( $ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1" );
+            curl_setopt( $ch, CURLOPT_URL, $url );
+            curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
+            curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            $result = curl_exec($ch);
+         // dd($result);
+           
+            curl_close($ch);
+            // Create a DOM object
+            $crawler = new simple_html_dom();
+            // Load HTML from a string
+            $crawler->load($result);
+            //dd($crawler);       
+            $i = 0;
+            //var_dump('<h1>', $page, "</h1>");
+            $arrInsert = [];
+            $i=0;
+            foreach($crawler->find('.result-list div.Product-Free') as $element){
+                if($element->find('a', 0)){
+                    $href = $element->find('a', 0)->href;
+                    $rs = CrawlData::where('url',$href)->first();
+                    if(!$rs){                                
+                        $this->getDetailNhaDatNhanh("https://nhadatnhanh.vn/".$href);
+                    }
                 }
+                          
+             }
+        }
                 
           
     } 
-    public function getDetailNhaDatNhanh($url){        
+    public function getDetailNhaDatNhanh($url, $arrData){        
         $ch = curl_init();
         curl_setopt( $ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1" );
         curl_setopt( $ch, CURLOPT_URL, $url );
@@ -378,16 +525,9 @@ class CrawlerController extends Controller
             $address = trim($crawler->find('.address-advert span', 0)->plaintext);
             $arrData['address'] = $address != '' ? $address : null;              
         }
-        $arrData['site_id'] = 4;        
-        if(isset($arrData['phone'])){
-            $rsData = CrawlData::where('phone', $arrData['phone'])->first();
-            if($rsData){
-                $rsData->lap = $rsData->lap + 1;
-                $rsData->save();
-            }else{
-                CrawlData::create($arrData);        
-            }
-        }
+        $arrData['site_id'] = 4;  
+
+        $this->insertDb($arrData);
     }
 
     public function tuoitre(){
@@ -465,15 +605,8 @@ class CrawlerController extends Controller
 
         }
         $arrData['site_id'] = 3;
-        if(isset($arrData['phone'])){
-            $rsData = CrawlData::where('phone', $arrData['phone'])->first();
-            if($rsData){
-                $rsData->lap = $rsData->lap + 1;
-                $rsData->save();
-            }else{
-                CrawlData::create($arrData);        
-            }
-        }
+
+        $this->insertDb($arrData);
     }
     public function mbnd(){
         set_time_limit(10000);
@@ -482,43 +615,43 @@ class CrawlerController extends Controller
         for($page = $limit; $page >= 1; $page--){ 
                 //$url = "http://bepducthanh.vn/bo-bep-gas-khuyen-mai-d4p".$page.".html";
             $arrReturn = [];
-              $url = "http://www.muabannhadat.vn/nha-ban-nha-pho-3535/tp-ho-chi-minh-s59?p=".$page;   
+            $url = "http://www.muabannhadat.vn/nha-ban-nha-pho-3535/tp-ho-chi-minh-s59?p=".$page;   
 
-                   // http://bepducthanh.vn/thiet-bi-nha-bep-d2.html                         
-                    $ch = curl_init();
-                    curl_setopt( $ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1" );
-                    curl_setopt( $ch, CURLOPT_URL, $url );
-                    curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
-                    curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
-                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                    $result = curl_exec($ch);
-                 // dd($result);
-                   
-                    curl_close($ch);
-                    // Create a DOM object
-                    $crawler = new simple_html_dom();
-                    // Load HTML from a string
-                    $crawler->load($result);
-                    //dd($crawler);       
-                    $i = 0;
-                    //var_dump('<h1>', $page, "</h1>");
-                    $arrInsert = [];
-                    $i=0;
-                    foreach($crawler->find('.content-list div.Product-TopListing') as $element){
-                        if($element->find('a', 0)){
-                            $href = $element->find('a', 0)->href;
-                            $rs = CrawlData::where('url',$href)->first();
-                            if(!$rs){                                
-                                $this->getDetailMbnd("http://www.muabannhadat.vn".$href);
-                            }
-                        }
-                                  
-                     }
+           // http://bepducthanh.vn/thiet-bi-nha-bep-d2.html                         
+            $ch = curl_init();
+            curl_setopt( $ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1" );
+            curl_setopt( $ch, CURLOPT_URL, $url );
+            curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
+            curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            $result = curl_exec($ch);
+         // dd($result);
+           
+            curl_close($ch);
+            // Create a DOM object
+            $crawler = new simple_html_dom();
+            // Load HTML from a string
+            $crawler->load($result);
+            //dd($crawler);       
+            $i = 0;
+            //var_dump('<h1>', $page, "</h1>");
+            $arrInsert = [];
+            $i=0;
+            foreach($crawler->find('.content-list div.Product-TopListing') as $element){
+                if($element->find('a', 0)){
+                    $href = $element->find('a', 0)->href;
+                    $rs = CrawlData::where('url',$href)->first();
+                    if(!$rs){                                
+                        $this->getDetailMbnd("http://www.muabannhadat.vn".$href);
+                    }
                 }
+                          
+             }
+        }
                 
           
     } 
-    public function getDetailMbnd($url){ 
+    public function getDetailMbnd($url, $arrData){ 
  
         $ch = curl_init();
         curl_setopt( $ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1" );
@@ -551,16 +684,15 @@ class CrawlerController extends Controller
              $arrData['address'] = $address != '' ? $address : null; 
 
         }
-        $arrData['site_id'] = 3;
-        if(isset($arrData['phone'])){
-            $rsData = CrawlData::where('phone', $arrData['phone'])->first();
-            if($rsData){
-                $rsData->lap = $rsData->lap + 1;
-                $rsData->save();
-            }else{
-                CrawlData::create($arrData);        
-            }
+        if($crawler->find('#MainContent_ctlDetailBox_lblSurface', 0)){
+            
+            $dien_tich = trim($crawler->find('#MainContent_ctlDetailBox_lblSurface', 0)->plaintext);
+             $arrData['dien_tich'] = $dien_tich != '' ? $dien_tich : null; 
+
         }
+        $arrData['site_id'] = 3;
+
+        $this->insertDb($arrData);
     }
     public function getPhoneMbnd($id){
         $phone = '';

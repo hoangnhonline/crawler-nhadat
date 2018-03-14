@@ -31,14 +31,10 @@
         <div class="form-group">
             <label>Role</label>
             <select class="form-control" name="role" id="role">      
-              <option value="" >--Tất cả--</option>                       
-              
-              <option value="1" {{ $role == 1 ? "selected" : "" }}>Admin</option>                                      
-                    <option value="2" {{ $role == 2 ? "selected" : "" }}>CSKH</option> 
-                    <option value="3" {{ $role == 3 ? "selected" : "" }}>PR</option>
-                    <option value="4" {{ $role == 4 ? "selected" : "" }}>CS CTV</option>
-                    <option value="5" {{ $role == 5 ? "selected" : "" }}>CTV</option>
-                    <option value="6" {{ $role == 6 ? "selected" : "" }}>Sản phẩm</option>              
+              <option value="" >--Tất cả--</option>
+                <option value="2" {{ $role == 2 ? "selected" : "" }}>CSKH</option> 
+                <option value="3" {{ $role == 3 ? "selected" : "" }}>Sales</option>
+                <option value="4" {{ $role == 4 ? "selected" : "" }}>Marketing</option>
             </select>
           </div>          
           </form>

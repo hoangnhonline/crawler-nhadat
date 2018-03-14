@@ -60,34 +60,17 @@
                 <div class="form-group">
                   <label>Địa chỉ <span class="red-star">*</span></label>
                   <input type="text" class="form-control" name="address" id="address" value="{{ old('address') }}">
-                </div>
-                <div class="form-group">
-                  <label>Thông tin ngân hàng <span class="red-star">*</span></label>
-                  <textarea class="form-control" name="bank_info" id="bank_info">{{ old('bank_info') }}</textarea>
-                </div>
+                </div>                
                 <div class="form-group">
                   <label>Role</label>
                   <select class="form-control" name="role" id="role">      
                     <option value="" >--Chọn role--</option>                       
                     <option value="1" {{ old('role') == 1 ? "selected" : "" }}>Admin</option>                                      
                     <option value="2" {{ old('role') == 2 ? "selected" : "" }}>CSKH</option> 
-                    <option value="3" {{ old('role') == 3 ? "selected" : "" }}>PR</option>
-                    <option value="4" {{ old('role') == 4 ? "selected" : "" }}>CS CTV</option>
-                    <option value="5" {{ old('role') == 5 ? "selected" : "" }}>CTV</option>               
-                    <option value="6" {{ old('role') == 6 ? "selected" : "" }}>Sản phẩm</option>                  
-                    
+                    <option value="3" {{ old('role') == 3 ? "selected" : "" }}>Sales</option>
+                    <option value="4" {{ old('role') == 4 ? "selected" : "" }}>Marketing</option>                    
                   </select>
-                </div> 
-                <div class="form-group" id="div_cs" style="display:none;">
-                  <label>Chăm sóc CTV</label>
-                  <select class="form-control" name="leader_id" id="leader_id">  
-                  <option value="">-- Chọn --</option>
-                    @foreach($csctvList as $cs)
-                    <option value="{{ $cs->id }}" {{ old('leader_id') == $cs->id ? "selected" : "" }}>[CS{{ $cs->id }}] {{ $cs->full_name }} </option>
-                    @endforeach
-                    
-                  </select>
-                </div>     
+                </div>                 
                 <div class="clearfix"></div>                     
                 <div class="form-group">
                   <label>Trạng thái</label>
@@ -119,27 +102,12 @@
 @section('js')
 <script type="text/javascript">
     $(document).ready(function(){
-      $('#formData').submit(function(){
-        if($('#role').val() == 5 && $('#leader_id').val() == ''){
-          alert('Chưa chọn chăm sóc CTV');
-          return false;
-        }
+      $('#formData').submit(function(){  
 
         $('#btnSave').hide();
         $('#btnLoading').show();
-      }); 
-      @if(old('role') == 5)
-        $('#div_cs').show();
-      @else
-        $('#div_cs').hide();
-      @endif
-      $('#role').change(function(){
-        if($(this).val() == 5){
-          $('#div_cs').show();
-        }else{
-          $('#div_cs').hide();
-        }
-      });     
+      });      
+      
     });
     
 </script>

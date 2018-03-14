@@ -8,7 +8,7 @@ use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\LichHen;
-use App\Models\CtvJoinSale;
+use App\Models\CrawlData;
 
 use Helper, File, Session, Auth, Image;
 
@@ -84,7 +84,7 @@ class HenController extends Controller
         $dataArr['ngay_hen'] = date('Y-m-d', strtotime($dataArr['ngay_hen']));
         $dataArr['user_id'] = Auth::user()->id;
         $rs = LichHen::create($dataArr);
-        $join = CtvJoinSale::find($dataArr['join_id']);
+        $join = CrawlData::find($dataArr['join_id']);
         $join->co_hen = 1;
         $join->save();
         Session::flash('message', 'Tạo mới thành công');
