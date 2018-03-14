@@ -169,7 +169,7 @@ $role = Auth::user()->role;
                                     </td>
                                     <td>
                                       {!! $item->name."<br>" !!}
-                                      {{ $item->phone }}                                      
+                                      <a href="https://www.google.com.vn/search?q={{ $item->phone }}" target="_blank">{{ $item->phone }}</a>
                                         @if($item->status_1 != 1 && $item->status_2 < 4 ) 
                                         <button type="button" class="btn btn-info tao-lich-hen btn-sm"  title="Tạo lịch hẹn" data-value="{{ $item->id }}" data-toggle="modal" data-target="#lichModal">Lịch hẹn <span class="badge">({{ $item->hen($item->id)->count() }})</span></button>
                                         @endif        

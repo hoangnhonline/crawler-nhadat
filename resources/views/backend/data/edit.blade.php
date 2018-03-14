@@ -100,7 +100,7 @@ $role = Auth::user()->role;
                 <label>Ngày gặp</label>
                  <input type="text" class="form-control" name="ngay_gap" id="ngay_gap" value="{{ $detail->ngay_gap }}">
               </div>
-              @if($role == 2)
+              @if($role <= 2)
               <div class="form-group">
                   <label>Trạng thái</label>              
                   <select class="form-control" name="status_1" id="status_1">                      
