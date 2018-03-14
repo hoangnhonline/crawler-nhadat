@@ -21,7 +21,7 @@ class AccountController extends Controller
     public function index(Request $request)
     {         
         if(Auth::user()->role > 1){
-            return redirect()->route('dashboard.index');
+            return redirect()->route('data.index');
         }
         $role = $leader_id = 0;
         $role = Auth::user()->role;
@@ -50,7 +50,7 @@ class AccountController extends Controller
     public function ctv(Request $request)
     {         
         if(!in_array(Auth::user()->role, [1, 4])){
-            return redirect()->route('dashboard.index');
+            return redirect()->route('data.index');
         }
         $query = Account::where('status', '>', 0);
     
@@ -65,7 +65,7 @@ class AccountController extends Controller
     public function create()
     {        
         if(Auth::user()->role > 1){
-            return redirect()->route('dashboard.index');
+            return redirect()->route('data.index');
         }
         $csctvList = Account::where(['role' => 4, 'status' => 1])->get();
         
@@ -147,7 +147,7 @@ class AccountController extends Controller
     public function destroy($id)
     {
         if(Auth::user()->role > 1){
-            return redirect()->route('dashboard.index');
+            return redirect()->route('data.index');
         }
         // delete
         $model = Account::find($id);
@@ -160,11 +160,11 @@ class AccountController extends Controller
     public function edit($id)
     {
         if(Auth::user()->role != 1 && Auth::user()->role != 4){
-            return redirect()->route('dashboard.index');
+            return redirect()->route('data.index');
         }
         if(Auth::user()->role == 4){
             if($id != Auth::user()->id){
-                return redirect()->route('dashboard.index');       
+                return redirect()->route('data.index');       
             }
         }
         $detail = Account::find($id);

@@ -34,7 +34,7 @@ class UserController extends Controller
                 return redirect()->route('data.index');    
             }
 
-            return redirect()->route('dashboard.index');
+            return redirect()->route('data.index');
         }        
         return view('backend.login');
     }
@@ -77,7 +77,7 @@ class UserController extends Controller
                     return redirect()->route('data.index');    
                 }
 
-                return redirect()->route('dashboard.index');
+                return redirect()->route('data.index');
               
             }
 
