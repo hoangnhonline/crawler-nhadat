@@ -22,7 +22,7 @@ class CrawlerController extends Controller
             '2' => 'https://muaban.net/nha-hem-ngo-ho-chi-minh-l59-c3407?cp='
         ];
         foreach($arrMuaBan as $type => $link_crawl){
-            $limit = 10;
+            $limit = 3;
 
             for($page = $limit; $page >= 1; $page--){                   
                 $arrReturn = [];
@@ -69,7 +69,7 @@ class CrawlerController extends Controller
             '2' => 'https://batdongsan.com.vn/cho-thue-kho-nha-xuong-dat-tp-hcm/p'
         ];
         foreach($arrBds as $type => $link_crawl){
-            $limit = 10;
+            $limit = 3;
 
             for($page = $limit; $page >= 1; $page--){                     
                 $arrReturn = [];
@@ -114,7 +114,7 @@ class CrawlerController extends Controller
             '2' => 'https://nhadatnhanh.vn/dm-nha-cho-thue-nha-pho-17/tt-tp-ho-chi-minh-1/page:'
         ];
         foreach($arrnhadatnhanh as $type => $link_crawl){
-            $limit = 10;
+            $limit = 3;
 
             for($page = $limit; $page >= 1; $page--){       
                 $arrReturn = [];
@@ -171,7 +171,7 @@ class CrawlerController extends Controller
             '2' => 'http://www.muabannhadat.vn/mat-bang-cho-thue-3521/tp-ho-chi-minh-s59?p='
         ];
         foreach($arrmuabannhadat as $type => $link_crawl){
-            $limit = 10;
+            $limit = 3;
 
             for($page = $limit; $page >= 1; $page--){                     
                 $arrReturn = [];
