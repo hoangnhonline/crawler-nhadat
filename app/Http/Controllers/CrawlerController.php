@@ -56,6 +56,7 @@ class CrawlerController extends Controller
             }   
 
         } 
+        echo "Done";die;
     }
     public function batdongsan(){
         set_time_limit(10000);        
@@ -103,7 +104,8 @@ class CrawlerController extends Controller
                               
                  }
             }
-        }    
+        }
+        echo "Done";die;    
       
     }
     public function nhadatnhanh(){
@@ -159,6 +161,7 @@ class CrawlerController extends Controller
                  }                              
             }
         }  
+        echo "Done";die;
           
     }
     public function muabannhadat(){
@@ -203,7 +206,8 @@ class CrawlerController extends Controller
                               
                  }
             }
-        }           
+        }
+        echo "Done";die;           
     }
 
     public function getDetailMuaBan($url, $arrData){         
