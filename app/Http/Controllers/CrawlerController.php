@@ -45,7 +45,9 @@ class CrawlerController extends Controller
               
                     $href = $element->find('a', 0)->href;
                     $arr['tieu_de'] = trim($element->find('.mbn-title', 0)->plaintext);
-                    $arr['gia'] = trim($element->find('.mbn-price', 0)->plaintext);
+                    if($element->find('.mbn-price', 0)){
+                        $arr['gia'] = trim($element->find('.mbn-price', 0)->plaintext);
+                    }
                     $arr['type'] = $type;
                     $rs = CrawlData::where('url',$href)->first();
                     if(!$rs){
